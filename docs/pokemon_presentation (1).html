@@ -1,0 +1,126 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación de Pokémon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0 0 60px 0;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        header {
+            background-color: #ffcb05;
+            text-align: center;
+            padding: 20px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: #3c5aa6;
+        }
+        section {
+            margin: 20px auto;
+            max-width: 800px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        section h2 {
+            color: #2a75bb;
+        }
+        section img {
+            width: 400px;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+            border-radius: 8px;
+        }
+        p {
+            line-height: 1.6;
+            text-align: justify;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #3c5aa6;
+            color: #fff;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            line-height: 40px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>¡Explora el Mundo de Pokémon!</h1>
+    </header>
+
+    <section id="pokemon1">
+        <h2>Pokémon 1: Pikachu</h2>
+        <img src="images/pokemon1.jpg" alt="Pikachu">
+        <p>Pikachu es un Pokémon de tipo Eléctrico conocido por su carisma y poder. Es la mascota icónica de la franquicia Pokémon y compañero de Ash Ketchum.</p>
+    </section>
+
+    <section id="pokemon2">
+        <h2>Pokémon 2: Charizard</h2>
+        <img src="images/pokemon2.jpg" alt="Charizard">
+        <p>Charizard es un Pokémon de tipo Fuego/Volador. Su fuerza y habilidades lo convierten en uno de los favoritos para batallas épicas.</p>
+    </section>
+
+    <section id="pokemon3">
+        <h2>Pokémon 3: Bulbasaur</h2>
+        <img src="images/pokemon3.jpg" alt="Bulbasaur">
+        <p>Bulbasaur es un Pokémon de tipo Planta/Veneno. Es ideal para entrenadores principiantes debido a su naturaleza amigable y versatilidad.</p>
+    </section>
+
+    <footer>
+        <p>© 2025 Presentación de Pokémon</p>
+    </footer>
+</body>
+</html>
